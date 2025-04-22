@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./proto/userpb;userpb"; // adding the go_package option so that go will know where to generate pb files
+
+service UserService {
+    rpc SignUp (SignUpRequest) returns (SignUpResponse);
+    rpc Login (LoginRequest) returns (LoginResponse);
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+}
+
+message SignUpRequest {
+    string name = 1;
+    string email = 2;
+    string password = 3;
+    string user_type = 4;
+}
+
+message SignUpResponse {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string token = 4;
+    string refresh_token = 5;
+    string user_type = 6;
+    string created_at = 7;
+    string updated_at = 8;
+  }
+  
+  message LoginRequest {
+    string email = 1;
+    string password = 2;
+  }
+  
+  message LoginResponse {
+    string token = 1;
+    string refresh_token = 2;
+    string user_type = 3;
+    string id = 4;
+    string name = 5;
+    string email = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+  message GetUserRequest {
+    string id = 1;
+  }
+  
+
+  message GetUserResponse {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string user_type = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+
+message ListUsersRequest {}
+
+message ListUsersResponse {
+    repeated GetUserResponse users = 1;
+}

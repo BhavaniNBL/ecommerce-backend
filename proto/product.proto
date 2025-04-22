@@ -1,0 +1,110 @@
+// syntax = "proto3";
+
+// package product;
+
+// option go_package = "./proto/productpb;productpb";
+
+
+// service ProductService {
+//     rpc CreateProduct(CreateProductRequest) returns (Product);
+//     rpc GetProduct(ProductID) returns (Product);
+//     rpc UpdateProduct(UpdateProductRequest) returns (Product);
+//     rpc DeleteProduct(ProductID) returns (Empty);
+//     rpc ListProducts(Empty) returns (ProductList);
+// }
+
+// message Product {
+//   string id = 1;
+//   string name = 2;
+//   string description = 3;
+//   float price = 4;
+//   string category = 5;
+//   string created_at = 6;
+//   string updated_at = 7;
+// }
+
+// message ProductID {
+//   string id = 1;
+// }
+
+// message ProductList {
+//   repeated Product products = 1;
+// }
+
+// message CreateProductRequest {
+//   string name = 1;
+//   string description = 2;
+//   float price = 3;
+//   string category = 4;
+// }
+
+// message UpdateProductRequest {
+//   string id = 1;
+//   string name = 2;
+//   string description = 3;
+//   float price = 4;
+//   string category = 5;
+// }
+
+// message Empty {}
+
+
+
+
+syntax = "proto3";
+
+package product;
+
+import "google/protobuf/timestamp.proto";  // Add the Timestamp import
+
+option go_package = "./proto/productpb;productpb";
+
+// Service definition
+service ProductService {
+    rpc CreateProduct(CreateProductRequest) returns (Product);
+    rpc GetProduct(ProductID) returns (Product);
+    rpc UpdateProduct(UpdateProductRequest) returns (Product);
+    rpc DeleteProduct(ProductID) returns (Empty);
+    rpc ListProducts(Empty) returns (ProductList);
+}
+
+// Message Definitions
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  float price = 4;
+  string category = 5;
+  int32  quantity = 6;
+  google.protobuf.Timestamp created_at = 7;  // Use Timestamp type
+  google.protobuf.Timestamp updated_at = 8;  // Use Timestamp type
+//   string created_at = 6;
+//   string updated_at = 7;
+}
+
+message ProductID {
+  string id = 1;
+}
+
+message ProductList {
+  repeated Product products = 1;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  float price = 3;
+  string category = 4;
+  int32 quantity = 5;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  float price = 4;
+  string category = 5;
+  int32 quantity = 6; 
+}
+
+message Empty {}

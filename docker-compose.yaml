@@ -1,0 +1,72 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:latest   # Use the latest version of PostgreSQL
+    restart: always
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres_ecommerce
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ecommerce_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ecommerce_net
+
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
+    ports:
+      - "50052:50052"
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    # environment:
+      # - DB_HOST=postgres
+      # - DB_PORT=5432
+      # - DB_USER=postgres_ecommerce
+      # - DB_PASSWORD=password
+      # - DB_NAME=ecommerce_db
+      # - REDIS_HOST=redis
+    volumes:
+    - .env:/app/.env
+    networks:
+      - ecommerce_net
+
+  redis:
+    image: redis:7
+    container_name: product-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ecommerce_net
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    # environment:
+    #   DATABASE_URL: "postgres://postgres_ecommerce:password@postgres:5432/ecommerce_db?sslmode=disable"
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - .env:/app/.env  # Only if needed for godotenv
+    networks:
+      - ecommerce_net
+
+volumes:
+  pgdata:   # ✅ This was missing before!
+
+networks:
+  ecommerce_net:
+    driver: bridge
