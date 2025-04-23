@@ -27,6 +27,7 @@ type ProductServiceClient interface {
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*Product, error)
 	DeleteProduct(ctx context.Context, in *ProductID, opts ...grpc.CallOption) (*Empty, error)
 	ListProducts(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ProductList, error)
+	CheckProductExists(ctx context.Context, in *ProductID, opts ...grpc.CallOption) (*ProductExistsResponse, error)
 }
 
 type productServiceClient struct {
@@ -82,6 +83,15 @@ func (c *productServiceClient) ListProducts(ctx context.Context, in *Empty, opts
 	return out, nil
 }
 
+func (c *productServiceClient) CheckProductExists(ctx context.Context, in *ProductID, opts ...grpc.CallOption) (*ProductExistsResponse, error) {
+	out := new(ProductExistsResponse)
+	err := c.cc.Invoke(ctx, "/product.ProductService/CheckProductExists", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProductServiceServer is the server API for ProductService service.
 // All implementations must embed UnimplementedProductServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type ProductServiceServer interface {
 	UpdateProduct(context.Context, *UpdateProductRequest) (*Product, error)
 	DeleteProduct(context.Context, *ProductID) (*Empty, error)
 	ListProducts(context.Context, *Empty) (*ProductList, error)
+	CheckProductExists(context.Context, *ProductID) (*ProductExistsResponse, error)
 	mustEmbedUnimplementedProductServiceServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedProductServiceServer) DeleteProduct(context.Context, *Product
 }
 func (UnimplementedProductServiceServer) ListProducts(context.Context, *Empty) (*ProductList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListProducts not implemented")
+}
+func (UnimplementedProductServiceServer) CheckProductExists(context.Context, *ProductID) (*ProductExistsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckProductExists not implemented")
 }
 func (UnimplementedProductServiceServer) mustEmbedUnimplementedProductServiceServer() {}
 
@@ -216,6 +230,24 @@ func _ProductService_ListProducts_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProductService_CheckProductExists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProductID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServiceServer).CheckProductExists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/product.ProductService/CheckProductExists",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServiceServer).CheckProductExists(ctx, req.(*ProductID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProductService_ServiceDesc is the grpc.ServiceDesc for ProductService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +274,10 @@ var ProductService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListProducts",
 			Handler:    _ProductService_ListProducts_Handler,
+		},
+		{
+			MethodName: "CheckProductExists",
+			Handler:    _ProductService_CheckProductExists_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

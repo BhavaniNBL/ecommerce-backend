@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/BhavaniNBL/ecommerce-backend/proto/inventorypb"
 	"github.com/BhavaniNBL/ecommerce-backend/proto/productpb"
 	"github.com/BhavaniNBL/ecommerce-backend/services/product-service/model"
 	"github.com/BhavaniNBL/ecommerce-backend/services/product-service/service"
@@ -58,22 +59,55 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	}
 
 	if err := h.service.Create(&product); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create product"})
-		return
+		// _, err := inventoryClient.UpdateInventory(
+		// 	context.Background(),
+		// 	&inventorypb.UpdateInventoryRequest{
+		// 		ProductId:      product.ID.String(),
+		// 		QuantityChange: 0, // initialize with 0 or default
+		// 	},
+		// )
+		// if err != nil {
+		// 	log.Println("⚠️ Failed to initialize inventory:", err)
+		// }
+		// c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create product"})
+		// return
+		_, err := h.service.InventoryClient.UpdateInventory(
+			context.Background(),
+			&inventorypb.UpdateInventoryRequest{
+				ProductId:      product.ID.String(),
+				QuantityChange: 0,
+			},
+		)
+		if err != nil {
+			log.Println("⚠️ Failed to initialize inventory:", err)
+		}
 	}
 	c.JSON(http.StatusCreated, product)
 }
 
 func (h *ProductHandler) GetProduct(c *gin.Context) {
-	id := c.Param("id")
-	log.Println("Fetching product with ID:", id)
-	product, err := h.service.GetByID(id)
-	if err != nil {
-		log.Println("Handler error:", err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token is required"})
 		return
 	}
-	c.JSON(http.StatusOK, product.ToGRPC())
+	productID := c.Param("id")
+	log.Println("Fetching product with ID:", productID)
+	grpcResponse, err := h.service.CheckInventoryForProduct(context.Background(), productID, token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check inventory"})
+		return
+	}
+	// Return the gRPC response data
+	c.JSON(http.StatusOK, grpcResponse)
+
+	// product, err := h.service.GetByID(id)
+	// if err != nil {
+	// 	log.Println("Handler error:", err)
+	// 	c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, product.ToGRPC())
 }
 
 func (h *ProductHandler) UpdateProduct(c *gin.Context) {

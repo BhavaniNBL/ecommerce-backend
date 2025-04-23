@@ -5,9 +5,10 @@ import (
 
 	//"github.com/BhavaniNBL/ecommerce-backend/services/user-service/db"
 	"github.com/BhavaniNBL/ecommerce-backend/config/db"
-	"github.com/BhavaniNBL/ecommerce-backend/services/user-service/middleware"
+	// "github.com/BhavaniNBL/ecommerce-backend/services/user-service/middleware"
 	"github.com/BhavaniNBL/ecommerce-backend/services/user-service/model"
 	"github.com/BhavaniNBL/ecommerce-backend/services/user-service/service"
+	"github.com/BhavaniNBL/ecommerce-backend/shared/middleware"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -17,10 +18,9 @@ func SetupRoutes(r *gin.Engine) {
 	// Public routes
 	r.POST("/signup", SignUp)
 	r.POST("/login", Login)
+	r.GET("/user/:id", middleware.JWTMiddleware(), GetUser)
+	r.GET("/users", middleware.JWTMiddleware(), ListUsers)
 
-	// Protected routes (JWT authentication required)
-	r.GET("/user/:id", middleware.Authenticate(), GetUser)
-	r.GET("/users", middleware.Authenticate(), ListUsers)
 }
 
 func SignUp(c *gin.Context) {

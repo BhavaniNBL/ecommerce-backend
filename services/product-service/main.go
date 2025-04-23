@@ -64,15 +64,19 @@ import (
 
 	appconfig "github.com/BhavaniNBL/ecommerce-backend/config"
 	config "github.com/BhavaniNBL/ecommerce-backend/config/redis"
+	"github.com/BhavaniNBL/ecommerce-backend/proto/inventorypb"
 	"github.com/BhavaniNBL/ecommerce-backend/proto/productpb"
 	"github.com/BhavaniNBL/ecommerce-backend/services/product-service/handler"
-	"github.com/BhavaniNBL/ecommerce-backend/services/product-service/middleware"
+
 	"github.com/BhavaniNBL/ecommerce-backend/services/product-service/model"
 	"github.com/BhavaniNBL/ecommerce-backend/services/product-service/repository"
 	"github.com/BhavaniNBL/ecommerce-backend/services/product-service/service"
+	"github.com/BhavaniNBL/ecommerce-backend/shared/middleware"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -88,7 +92,7 @@ func main() {
 	if err != nil {
 		log.Fatal("❌ Failed to connect to DB:", err)
 	}
-	db.Migrator().DropTable(&model.Product{}) // WARNING: Deletes all data
+	//db.Migrator().DropTable(&model.Product{}) // WARNING: Deletes all data
 	db.AutoMigrate(&model.Product{})
 
 	//db.AutoMigrate(&model.Product{})
@@ -110,7 +114,12 @@ func main() {
 
 	// ---- Setup Layers ----
 	repo := repository.NewProductRepo(db)
-	grpcSvc := service.NewProductService(repo)
+	invConn, err := grpc.NewClient("inventory-service:50053", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("❌ Failed to connect to Inventory Service: %v", err)
+	}
+	invClient := inventorypb.NewInventoryServiceClient(invConn)
+	grpcSvc := service.NewProductService(repo, invClient)
 	httpHandler := handler.NewProductHandler(grpcSvc)
 
 	// ---- gRPC server ----
@@ -119,7 +128,9 @@ func main() {
 		if err != nil {
 			log.Fatal("failed to listen:", err)
 		}
-		grpcServer := grpc.NewServer()
+		grpcServer := grpc.NewServer(
+		//grpc.UnaryInterceptor(auth.AuthInterceptor()),
+		)
 		productpb.RegisterProductServiceServer(grpcServer, grpcSvc)
 		log.Println("🚀 gRPC server listening on :50052")
 		if err := grpcServer.Serve(lis); err != nil {
@@ -129,7 +140,7 @@ func main() {
 
 	// ---- HTTP server ----
 	r := gin.Default()
-	r.Use(middleware.JwtMiddleware())
+	r.Use(middleware.JWTMiddleware())
 	r.POST("/products", httpHandler.CreateProduct)
 	r.GET("/products/:id", httpHandler.GetProduct)
 	r.GET("/products", httpHandler.ListProducts)

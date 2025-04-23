@@ -27,17 +27,88 @@ services:
       - redis
     env_file:
       - .env
-    # environment:
-      # - DB_HOST=postgres
-      # - DB_PORT=5432
-      # - DB_USER=postgres_ecommerce
-      # - DB_PASSWORD=password
-      # - DB_NAME=ecommerce_db
-      # - REDIS_HOST=redis
     volumes:
     - .env:/app/.env
+    environment:
+      - PRODUCT_SERVICE_ADDR=product-service:50052
     networks:
       - ecommerce_net
+
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    ports:
+      - "2181:2181"
+    networks:
+      - ecommerce_net
+
+  kafka:
+    image: bitnami/kafka:3.9
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    networks:
+      - ecommerce_net
+    volumes:
+      - /tmp/broker-metadata:/opt/bitnami/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--list", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: services/inventory-service/Dockerfile
+    ports:
+      - "50053:50053"
+      - "8083:8083"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: on-failure
+    env_file:
+      - .env
+    volumes:
+      - .env:/app/.env
+    networks:
+      - ecommerce_net
+
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    ports:
+      - "8081:8081"     # HTTP for REST
+    env_file:
+      - .env
+    volumes:
+      - .env:/app/.env
+    networks:
+      - ecommerce_net
+
+
 
   redis:
     image: redis:7
@@ -47,12 +118,11 @@ services:
     networks:
       - ecommerce_net
 
+
   user-service:
     build:
       context: .
       dockerfile: services/user-service/Dockerfile
-    # environment:
-    #   DATABASE_URL: "postgres://postgres_ecommerce:password@postgres:5432/ecommerce_db?sslmode=disable"
     depends_on:
       - postgres
     ports:
@@ -60,7 +130,7 @@ services:
     env_file:
       - .env
     volumes:
-      - .env:/app/.env  # Only if needed for godotenv
+      - .env:/app/.env  
     networks:
       - ecommerce_net
 

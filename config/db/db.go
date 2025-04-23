@@ -65,7 +65,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/BhavaniNBL/ecommerce-backend/services/user-service/model" // ✅ adjust if path differs depending on your module name
+	inventorymodel "github.com/BhavaniNBL/ecommerce-backend/services/inventory-service/model"
+	ordermodel "github.com/BhavaniNBL/ecommerce-backend/services/order-service/model"
+	productmodel "github.com/BhavaniNBL/ecommerce-backend/services/product-service/model"
+	usermodel "github.com/BhavaniNBL/ecommerce-backend/services/user-service/model" // ✅ adjust if path differs depending on your module name
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -91,9 +94,26 @@ func InitDB() {
 	log.Println("✅ Database connection established")
 
 	// ✅ Auto-migrate the User model
-	err = DB.AutoMigrate(&model.User{})
+	err = DB.AutoMigrate(&usermodel.User{})
 	if err != nil {
 		log.Fatalf("❌ Error during auto migration: %v", err)
+	}
+
+	// Auto-migrate the Inventory table
+	err = DB.AutoMigrate(&inventorymodel.Inventory{})
+	if err != nil {
+		log.Fatalf("❌ Error during inventory migration: %v", err)
+	}
+
+	// Auto-migrate the Product table
+	err = DB.AutoMigrate(&productmodel.Product{})
+	if err != nil {
+		log.Fatalf("❌ Error during inventory migration: %v", err)
+	}
+	// Auto-migrate the Order table
+	err = DB.AutoMigrate(&ordermodel.Order{})
+	if err != nil {
+		log.Fatalf("❌ Error during inventory migration: %v", err)
 	}
 
 }
