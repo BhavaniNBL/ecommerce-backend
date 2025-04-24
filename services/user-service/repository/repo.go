@@ -26,9 +26,6 @@ func (r *UserRepository) GetUserByEmail(email string) (*model.User, error) {
 	log.Printf("Looking for user by email: %s", email)
 
 	result := db.DB.Where("email = ?", email).First(&user)
-	// if errors.Is(result.Error, db.DB.Error) || result.RowsAffected == 0 {
-	// 	return nil, errors.New("user not found")
-	// }
 	if result.Error != nil {
 		return nil, result.Error
 	}

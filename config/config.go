@@ -34,22 +34,22 @@ import (
 )
 
 type Config struct {
-	DBHost             string
-	DBPort             string
-	DBUser             string
-	DBPassword         string
-	DBName             string
-	RedisHost          string
-	RedisPort          string
-	KafkaHost          string
-	KafkaPort          string
-	KafkaBroker        string
-	KafkaTopic         string
-	KafkaTopicOrder    string
-	ProductServiceAddr string
+	DBHost               string
+	DBPort               string
+	DBUser               string
+	DBPassword           string
+	DBName               string
+	RedisHost            string
+	RedisPort            string
+	KafkaHost            string
+	KafkaPort            string
+	KafkaBroker          string
+	KafkaTopic           string
+	KafkaTopicOrder      string
+	ProductServiceAddr   string
 	InventoryServiceAddr string
 
-	// KafkaTopicPayment string
+	KafkaTopicPayment string
 }
 
 func LoadConfig() *Config {
@@ -70,15 +70,15 @@ func LoadConfig() *Config {
 		RedisPort:  getEnv("REDIS_PORT", "6379"),
 		// KafkaHost:  getEnv("KAFKA_HOST", "localhost"),
 		// KafkaPort:  getEnv("KAFKA_PORT", "9092"),
-		KafkaHost:          getEnv("KAFKA_HOST", "localhost"),
-		KafkaPort:          getEnv("KAFKA_PORT", "9092"),
-		KafkaBroker:        getEnv("KAFKA_BROKER", "localhost:9092"),
-		KafkaTopic:         getEnv("KAFKA_TOPIC_INVENTORY", "inventory-events"),
-		KafkaTopicOrder:    getEnv("KAFKA_TOPIC_ORDER", "order-events"),
-		ProductServiceAddr: getEnv("PRODUCT_SERVICE_ADDR", "product-service:50052"),
+		KafkaHost:            getEnv("KAFKA_HOST", "localhost"),
+		KafkaPort:            getEnv("KAFKA_PORT", "9092"),
+		KafkaBroker:          getEnv("KAFKA_BROKER", "localhost:9092"),
+		KafkaTopic:           getEnv("KAFKA_TOPIC_INVENTORY", "inventory-events"),
+		KafkaTopicOrder:      getEnv("KAFKA_TOPIC_ORDER", "order-events"),
+		ProductServiceAddr:   getEnv("PRODUCT_SERVICE_ADDR", "product-service:50052"),
 		InventoryServiceAddr: getEnv("INVENTORY_SERVICE_ADDR", "inventory-service:50053"),
 
-		// KafkaTopicPayment: getEnv("KAFKA_TOPIC_PAYMENT", "payment-events"),
+		KafkaTopicPayment: getEnv("KAFKA_TOPIC_PAYMENT", "payment-events"),
 	}
 }
 

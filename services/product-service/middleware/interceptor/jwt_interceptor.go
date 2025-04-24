@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,7 +13,7 @@ import (
 )
 
 // Secret key used to sign JWT (should be loaded from config/env in production)
-var jwtSecret = []byte("your_super_secret_key")
+var jwtSecret = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 // Claims defines the structure for JWT claims
 type Claims struct {

@@ -1,110 +1,3 @@
-// package service
-
-// import (
-// 	"fmt"
-// 	"time"
-
-// 	"github.com/BhavaniNBL/ecommerce-backend/services/user-service/model"
-// 	"github.com/BhavaniNBL/ecommerce-backend/services/user-service/repository"
-// 	"github.com/BhavaniNBL/ecommerce-backend/services/user-service/util"
-
-// 	"github.com/dgrijalva/jwt-go"
-// 	"golang.org/x/crypto/bcrypt"
-// )
-
-// var userRepo = repository.NewUserRepository()
-
-// func SignUp(req model.SignUpRequest) (*model.User, string, string, error) {
-// 	// Hash password
-// 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-// 	if err != nil {
-// 		return nil, "", "", err
-// 	}
-
-// 	user := &model.User{
-// 		ID:       util.GenerateUUID(),
-// 		Name:     req.Name,
-// 		Email:    req.Email,
-// 		Password: string(hashedPassword),
-// 		UserType: "customer", // Default user type
-// 	}
-
-// 	// Save user to DB
-// 	err = userRepo.CreateUser(user)
-// 	if err != nil {
-// 		return nil, "", "", err
-// 	}
-
-// 	// Generate JWT and refresh tokens
-// 	token, err := generateJWT(user)
-// 	if err != nil {
-// 		return nil, "", "", err
-// 	}
-
-// 	refreshToken, err := generateRefreshToken(user)
-// 	if err != nil {
-// 		return nil, "", "", err
-// 	}
-
-// 	return user, token, refreshToken, nil
-// }
-
-// func Login(req model.LoginRequest) (string, string, error) {
-// 	// Find user by email
-// 	user, err := userRepo.GetUserByEmail(req.Email)
-// 	if err != nil {
-// 		return "", "", err
-// 	}
-
-// 	// Compare password
-// 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
-// 	if err != nil {
-// 		return "", "", fmt.Errorf("invalid credentials")
-// 	}
-
-// 	// Generate JWT and refresh tokens
-// 	token, err := generateJWT(user)
-// 	if err != nil {
-// 		return "", "", err
-// 	}
-
-// 	refreshToken, err := generateRefreshToken(user)
-// 	if err != nil {
-// 		return "", "", err
-// 	}
-
-// 	return token, refreshToken, nil
-// }
-
-// func GetUserByID(id string) (*model.User, error) {
-// 	return userRepo.GetUserByID(id)
-// }
-
-// func ListUsers() ([]model.User, error) {
-// 	return userRepo.ListUsers()
-// }
-
-// func generateJWT(user *model.User) (string, error) {
-// 	claims := jwt.MapClaims{
-// 		"sub":  user.ID,
-// 		"role": user.UserType,
-// 		"exp":  time.Now().Add(time.Hour * 24).Unix(), // Expiration time: 24 hours
-// 	}
-
-// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-// 	return token.SignedString([]byte("your_jwt_secret_key"))
-// }
-
-// func generateRefreshToken(user *model.User) (string, error) {
-// 	claims := jwt.MapClaims{
-// 		"sub": user.ID,
-// 		"exp": time.Now().Add(time.Hour * 72).Unix(), // Expiration time: 72 hours
-// 	}
-
-// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-// 	return token.SignedString([]byte("your_jwt_secret_key"))
-// }
-
 package service
 
 import (
@@ -204,10 +97,9 @@ func ListUsers() ([]model.User, error) {
 }
 
 func generateJWT(user *model.User) (string, error) {
-	// Get the JWT secret key from environment variable
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 	if secretKey == "" {
-		secretKey = "default_jwt_secret_key" // Use a default key if env var is not set
+		secretKey = "default_jwt_secret_key"
 	}
 
 	claims := jwt.MapClaims{
@@ -221,15 +113,15 @@ func generateJWT(user *model.User) (string, error) {
 }
 
 func generateRefreshToken(user *model.User) (string, error) {
-	// Get the JWT secret key from environment variable
+
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 	if secretKey == "" {
-		secretKey = "default_jwt_secret_key" // Use a default key if env var is not set
+		secretKey = "default_jwt_secret_key"
 	}
 
 	claims := jwt.MapClaims{
 		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 72).Unix(), // Expiration time: 72 hours
+		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

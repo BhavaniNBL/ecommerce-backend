@@ -6,11 +6,12 @@ import (
 )
 
 type PaymentRepo struct {
-	DB *gorm.DB
+	DB          *gorm.DB
+	KafkaBroker string
 }
 
-func NewPaymentRepo(db *gorm.DB) *PaymentRepo {
-	return &PaymentRepo{DB: db}
+func NewPaymentRepo(db *gorm.DB, broker string) *PaymentRepo {
+	return &PaymentRepo{DB: db, KafkaBroker: broker}
 }
 
 func (r *PaymentRepo) Save(payment *model.Payment) error {

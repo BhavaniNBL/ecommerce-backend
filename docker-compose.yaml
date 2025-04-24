@@ -108,6 +108,42 @@ services:
     networks:
       - ecommerce_net
 
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    ports:
+      - "8084:8084"  # Adjust if you're using gRPC too (e.g., "50054:50054")
+    env_file:
+      - .env
+    volumes:
+      - .env:/app/.env
+    networks:
+      - ecommerce_net
+  
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    ports:
+      - "8086:8086"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    volumes:
+      - .env:/app/.env
+    networks:
+      - ecommerce_net
+
 
 
   redis:
@@ -133,6 +169,8 @@ services:
       - .env:/app/.env  
     networks:
       - ecommerce_net
+
+
 
 volumes:
   pgdata:   # ✅ This was missing before!

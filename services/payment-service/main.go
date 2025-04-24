@@ -12,6 +12,7 @@ import (
 	"github.com/BhavaniNBL/ecommerce-backend/services/payment-service/repository"
 	"github.com/BhavaniNBL/ecommerce-backend/services/payment-service/service"
 	kafkaUtil "github.com/BhavaniNBL/ecommerce-backend/shared/KafkaConsumerUtil"
+	"github.com/BhavaniNBL/ecommerce-backend/shared/middleware"
 	"github.com/IBM/sarama"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -27,14 +28,16 @@ func main() {
 	}
 	db.AutoMigrate(&model.Payment{})
 
-	repo := repository.NewPaymentRepo(db)
+	repo := repository.NewPaymentRepo(db, cfg.KafkaBroker)
 	svc := service.NewPaymentService(cfg.KafkaBroker, cfg.KafkaTopicOrder, "payment-events", repo)
 	h := handler.NewPaymentHandler(repo)
 
 	// Start REST server
 	r := gin.Default()
+	r.Use(middleware.JWTMiddleware())
+	r.POST("/payments", h.ProcessPayment)
 	r.GET("/payments/:orderID", h.GetByOrderID)
-	go r.Run(":8085")
+	go r.Run(":8084")
 
 	// Start Kafka consumer
 	consumerGroup := "payment-consumer"

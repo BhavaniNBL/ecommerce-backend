@@ -28,7 +28,9 @@ func main() {
 	}
 	db.AutoMigrate(&model.Order{})
 
-	conn, err := grpc.NewClient(cfg.InventoryServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// conn, err := grpc.Dail(cfg.InventoryServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(cfg.InventoryServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
 	if err != nil {
 		log.Fatal("❌ gRPC connection failed:", err)
 	}
